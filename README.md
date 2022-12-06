@@ -23,14 +23,11 @@ pip install -r requirements.txt
 
 Create an API key in your Prefect Cloud workspace. Run the provided command in the terminal
 
-
 # Set up GCP 
 
 - Log in 
 - Create Project
 - Set up BigQuery
-
----
 
 ## Create Prefect GCP credentials block
 
