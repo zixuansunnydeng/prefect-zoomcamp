@@ -20,11 +20,13 @@ import pandas as pd
 from prefect import task, flow, get_run_logger
 from prefect.blocks.system import JSON
 from prefect.task_runners import SequentialTaskRunner
+from prefect.tasks import task_input_hash
 
 from prefect_utils import BigQueryPandas
 from prefect_utils.tasks import get_files_to_process, extract, transform
 from prefect.blocks.core import Block
 from prefect_gcp.credentials import GcpCredentials
+
 
 @task
 def load(df: pd.DataFrame, file: str, tbl: str, if_exists: str = "append") -> None:
@@ -70,7 +72,7 @@ def extract(file_name: str) -> pd.DataFrame:
         logger.warning("File %s is not available in TLC Trip Record Data")
 
 
-@task
+@task(cache_key_fn=task_input_hash, cache_expiration=timedelta(days=1))
 def transform(
     df: pd.DataFrame, file_name: str, service_type: str = "yellow"
 ) -> pd.DataFrame:
@@ -135,28 +137,8 @@ def check_if_processed(file: str, service_type: str = "yellow") -> bool:
     return exists
 
 
-# @flow(task_runner=SequentialTaskRunner())
-# def taxi_data(
-#     file: str = "yellow_tripdata_2022-08.parquet",
-#     dataset: str = "trips_data_all",
-#     table_name: str = "yellow_tripdata",
-#     service_type: str = "yellow_tripdata",
-#     if_exists: str = "replace",
-#     reset_block_value: bool = True,
-# ):
-#     tbl = f"{dataset}.{table_name}"
-#     block = BigQueryPandas.load("default")
-#     block.create_dataset_if_not_exists(dataset)
-#     df = extract.with_options(name=f"extract_{file}").submit(file)
-#     df = transform.with_options(name=f"transform_{file}").submit(df, file)
-#     load.with_options(name=f"load_{file}").submit(df, file, tbl, if_exists=if_exists)
-#     update_pocessed_files.with_options(name=f"update_block_{file}").submit(
-#         df, file, tbl, service_type, reset_block_value
-#     )
-
-
 @flow(task_runner=SequentialTaskRunner())
-def parent(
+def taxi_etl(
     dataset: str = "trips_data",
     table_name: str = "yellow_tripdata",
     year: int = 2022,
