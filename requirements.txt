@@ -9,5 +9,3 @@ prefect
 prefect-gcp
 psycopg2
 pydata-google-auth
-pygit2
-python-dotenv
