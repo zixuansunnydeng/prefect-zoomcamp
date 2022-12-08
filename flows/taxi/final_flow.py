@@ -61,7 +61,7 @@ def get_files_to_process(year: int = 2022, service_type: str = "yellow") -> List
     return valid_files
 
 
-@task
+@task(retries=3, retry_delay_seconds=60)
 def extract(file_name: str) -> pd.DataFrame:
     logger = get_run_logger()
     try:
