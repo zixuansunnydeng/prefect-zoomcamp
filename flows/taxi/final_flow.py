@@ -169,6 +169,12 @@ def taxi_etl(
                 df.result(), file, tbl, service_type
             )
 
+@flow()
+def parent_flow(
+    years: List[] = [2019, 2020, 2021, 2022]
+):
+    for x in years:
+        taxi_etl(year=x)
 
 if __name__ == "__main__":
-    parent()
+    parent_flow()
