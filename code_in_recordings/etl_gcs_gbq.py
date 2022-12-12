@@ -20,9 +20,9 @@ def transform(
     path: str,
 ) -> pd.DataFrame:  # simplified data cleaning example
     df_raw = pd.read_parquet(path)
-    print(f'pre: missing passenger count rows: {df_raw["passenger_count"].isna()}')
+    print(f'pre: missing passenger counts: {df_raw["passenger_count"].isna().sum()}')
     df_raw["passenger_count"] = df_raw["passenger_count"].fillna(0)  # fill with 0
-    print(f'post: missing passenger count rows: {df_raw["passenger_count"].isna()}')
+    print(f'post: missing passenger counts: {df_raw["passenger_count"].isna().sum()}')
     return df_raw
 
 
