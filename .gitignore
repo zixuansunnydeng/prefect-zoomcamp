@@ -131,3 +131,6 @@ dmypy.json
 .vscode/
 .tmp/
 *-deployment.yaml
+
+#big files
+*.parquet
