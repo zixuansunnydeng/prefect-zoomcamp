@@ -5,6 +5,7 @@
 # pip install pandas-gbq pyarrow prefect-gcp['cloud_storage']
 # pyarrow is larger, but can compress better than fastparquet
 
+from pathlib import Path
 import pandas as pd
 from prefect import flow, task
 from prefect_gcp import GcpCredentials
@@ -15,9 +16,19 @@ gcp_credentials_block = GcpCredentials.load("de-zoom-auth")
 
 
 @task()
-def transform(
-    path: str,
-) -> pd.DataFrame:  # simplified data cleaning example
+def extract(color: str) -> Path:
+    """Download parquet file from GCS"""
+    path = Path(f"{color}/{color}_2022_09.parquet")
+
+    gcs_block = GcsBucket.load("gcs-best")
+    gcs_block.get_directory(from_path=path, local_path="./")
+    # will get a file and write it out, no return value
+    return path
+
+
+@task()
+def transform(path: Path) -> pd.DataFrame:
+    """Simplified data cleaning example"""
     df_raw = pd.read_parquet(path)
     print(f'pre: missing passenger counts: {df_raw["passenger_count"].isna().sum()}')
     df_raw["passenger_count"] = df_raw["passenger_count"].fillna(0)
@@ -25,39 +36,38 @@ def transform(
     return df_raw
 
 
-@task(log_prints=True)
+@task()
 def write_bq(df: pd.DataFrame) -> None:
-    try:
-        df.to_gbq(
-            destination_table="prefect-sbx-community-eng.dezoomcamp.rides",
-            project_id="prefect-sbx-community-eng",
-            credentials=service_account.Credentials.from_service_account_info(
-                gcp_credentials_block.service_account_info
-            ),
-            chunksize=500_000,
-            if_exists="append",
-            progress_bar=True,
-        )
-    except Exception as e:
-        print(f"Exception {e} - oops, did not load")
+    """Write DataFrame to BigQuery table"""
+    df.to_gbq(
+        destination_table="prefect-sbx-community-eng.dezoomcamp.rides",
+        project_id="prefect-sbx-community-eng",
+        credentials=service_account.Credentials.from_service_account_info(
+            gcp_credentials_block.service_account_info
+        ),
+        chunksize=500_000,
+        if_exists="append",
+        progress_bar=True,
+    )
+    return
+
+
+@task()
+def cleanup(path: Path) -> None:
+    """delete the file locally after use"""
+    path.unlink(missing_ok=True)
+    return
 
 
 @flow()
 def etl():
-    color = "yellow"
-
-    # extract
-    gcs_path = f"{color}/{color}_2022_09.parquet"
-
-    gcs_block = GcsBucket.load("gcs-best")
-    gcs_block.get_directory(from_path=gcs_path, local_path="./")
-    # will get a file and write it out, no return
-
-    # transform
-    df = transform(gcs_path)  # same as local path
-
-    # load
+    """The main ETL flow"""
+    color = "yellow"  # taxi color
+    path = extract(color)
+    df = transform(path)
     write_bq(df)
+    cleanup(path)
+    return
 
 
 if __name__ == "__main__":
