@@ -1,7 +1,3 @@
-# extract data from gcs
-# transform - basic data cleaning example - fill passenger count nans with 0s
-# load data into gbq
-
 # pip install pandas-gbq pyarrow prefect-gcp['cloud_storage']
 # pyarrow is larger, but can compress better than fastparquet
 
@@ -11,8 +7,6 @@ from prefect import flow, task
 from prefect_gcp import GcpCredentials
 from prefect_gcp.cloud_storage import GcsBucket
 from google.oauth2 import service_account
-
-gcp_credentials_block = GcpCredentials.load("de-zoom-auth")
 
 
 @task()
@@ -39,6 +33,10 @@ def transform(path: Path) -> pd.DataFrame:
 @task()
 def write_bq(df: pd.DataFrame) -> None:
     """Write DataFrame to BigQuery table"""
+
+    # load credentials block
+    gcp_credentials_block = GcpCredentials.load("de-zoom-auth")
+
     df.to_gbq(
         destination_table="prefect-sbx-community-eng.dezoomcamp.rides",
         project_id="prefect-sbx-community-eng",
@@ -54,14 +52,14 @@ def write_bq(df: pd.DataFrame) -> None:
 
 @task()
 def cleanup(path: Path) -> None:
-    """delete the file locally after use"""
+    """Delete the file locally after use"""
     path.unlink(missing_ok=True)
     return
 
 
 @flow()
 def etl():
-    """The main ETL flow"""
+    """Main ETL flow"""
     color = "yellow"  # taxi color
     path = extract(color)
     df = transform(path)
