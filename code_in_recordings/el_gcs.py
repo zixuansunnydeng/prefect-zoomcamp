@@ -1,16 +1,15 @@
-import random
+from random import randint
 from pathlib import Path
 import pandas as pd
 from prefect import flow, task
 from prefect_gcp.cloud_storage import GcsBucket
 
 
-@task(retries=3, log_prints=True)
+@task(log_prints=True, retries=3)
 def extract() -> pd.DataFrame:
-    """Read data from web into pandas dataframe and inspect"""
-
-    # create artificial failure to show value of retries
-    # if random.randint(0, 1) > 0:
+    """Read data from web into pandas DataFrame and inspect"""
+    # create an artificial failure to show value of retries
+    # if randint(0, 1) > 0:
     #     raise Exception
 
     df = pd.read_parquet(
@@ -19,6 +18,7 @@ def extract() -> pd.DataFrame:
     print(df.head(2))
     print(f"columns: {df.columns}")
     print(f"rows: {len(df)}")
+
     return df
 
 
@@ -30,9 +30,6 @@ def write_local(df: pd.DataFrame) -> Path:
     month = "09"
     path = Path(f"{color}/{color}_{year}_{month}.parquet")
     df.to_parquet(path, compression="gzip")
-    # default is snappy compression, not as much compression as gzip
-    # pyarrow is used by default, if available
-    # pyarrow compresses better than fastparquet, but is larger pkg
     return path
 
 
@@ -46,8 +43,8 @@ def write_gcs(color: str) -> None:
 
 @task()
 def cleanup(path: Path) -> None:
-    """Delete the file locally after use"""
-    path.unlink(missing_ok=True)
+    """Delete the local file after use"""
+    path.unlink()
     return
 
 
@@ -59,7 +56,6 @@ def el() -> None:
     path = write_local(df)
     write_gcs(color)
     cleanup(path)
-
     return
 
 

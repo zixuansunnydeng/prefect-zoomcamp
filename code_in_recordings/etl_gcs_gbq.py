@@ -1,38 +1,34 @@
-# pip install pandas-gbq pyarrow prefect-gcp['cloud_storage']
-# pyarrow is larger, but can compress better than fastparquet
-
 from pathlib import Path
 import pandas as pd
 from prefect import flow, task
-from prefect_gcp import GcpCredentials
 from prefect_gcp.cloud_storage import GcsBucket
+from prefect_gcp import GcpCredentials
 from google.oauth2 import service_account
 
 
 @task()
 def extract(color: str) -> Path:
-    """Download parquet file from GCS"""
+    """Download trip data parquet file from GCS"""
     path = Path(f"{color}/{color}_2022_09.parquet")
 
     gcs_block = GcsBucket.load("gcs-best")
     gcs_block.get_directory(from_path=path, local_path="./")
-    # will get a file and write it out, no return value
     return path
 
 
 @task()
 def transform(path: Path) -> pd.DataFrame:
     """Simplified data cleaning example"""
-    df_raw = pd.read_parquet(path)
-    print(f'pre: missing passenger counts: {df_raw["passenger_count"].isna().sum()}')
-    df_raw["passenger_count"] = df_raw["passenger_count"].fillna(0)
-    print(f'post: missing passenger counts: {df_raw["passenger_count"].isna().sum()}')
-    return df_raw
+    df = pd.read_parquet(path)
+    print(f"pre: missing passenger count: {df['passenger_count'].isna().sum()}")
+    df["passenger_count"] = df["passenger_count"].fillna(0)
+    print(f"post: missing passenger count: {df['passenger_count'].isna().sum()}")
+    return df
 
 
 @task()
 def write_bq(df: pd.DataFrame) -> None:
-    """Write DataFrame to BigQuery table"""
+    """Write DataFrame to BiqQuery"""
 
     # load credentials block
     gcp_credentials_block = GcpCredentials.load("de-zoom-auth")
@@ -45,27 +41,25 @@ def write_bq(df: pd.DataFrame) -> None:
         ),
         chunksize=500_000,
         if_exists="append",
-        progress_bar=True,
     )
     return
 
 
 @task()
 def cleanup(path: Path) -> None:
-    """Delete the file locally after use"""
-    path.unlink(missing_ok=True)
+    """Delete local file after use"""
+    path.unlink()
     return
 
 
 @flow()
 def etl():
     """Main ETL flow"""
-    color = "yellow"  # taxi color
+    color = "yellow"  # taxic color
     path = extract(color)
     df = transform(path)
     write_bq(df)
     cleanup(path)
-    return
 
 
 if __name__ == "__main__":
