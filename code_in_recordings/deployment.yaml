@@ -1,0 +1,47 @@
+###
+### A complete description of a Prefect Deployment for flow 'parent-etl'
+###
+name: parent_etl_flow
+description: null
+version: 5b4e254c3ae80213901b566211fb4615
+# The work queue that will handle this deployment's runs
+work_queue_name: local_queue
+tags:
+- zoomcamp
+parameters: {"color": "yellow", "dates": ['2022_08', '2022_09', '2022_10']}
+schedule: null
+infra_overrides: {}
+infrastructure:
+  type: process
+  env: {}
+  labels: {}
+  name: null
+  command: null
+  stream_output: true
+  working_dir: null
+  block_type_slug: process
+  _block_type_slug: process
+
+###
+### DO NOT EDIT BELOW THIS LINE
+###
+flow_name: parent-etl
+manifest_path: null
+storage: null
+path: /Users/kaliserichmond/eng/prefect-zoomcamp/code_in_recordings
+entrypoint: parameterized_flow.py:parent_etl
+parameter_openapi_schema:
+  title: Parameters
+  type: object
+  properties:
+    color:
+      title: color
+      type: string
+    dates:
+      title: dates
+      type: array
+      items: {}
+  required:
+  - color
+  - dates
+  definitions: null
