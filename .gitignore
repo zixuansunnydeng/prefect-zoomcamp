@@ -132,5 +132,7 @@ dmypy.json
 .tmp/
 *-deployment.yaml
 
-#big files
+# Big files
 *.parquet
+*.csv
+data/
