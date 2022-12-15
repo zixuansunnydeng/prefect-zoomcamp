@@ -18,7 +18,7 @@ def extract(color: str) -> Path:
 
 @task()
 def transform(path: Path) -> pd.DataFrame:
-    """Simplified data cleaning example"""
+    """Simple data cleaning example"""
     df = pd.read_parquet(path)
     print(f"pre: missing passenger count: {df['passenger_count'].isna().sum()}")
     df["passenger_count"] = df["passenger_count"].fillna(0)
