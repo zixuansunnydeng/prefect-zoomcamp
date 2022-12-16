@@ -7,11 +7,11 @@ from google.oauth2 import service_account
 
 
 @task()
-def extract(color: str) -> Path:
+def extract_from_gcs(color: str, year: int, month: int) -> Path:
     """Download trip data parquet file from GCS"""
-    path = Path(f"{color}/{color}_2022_09.parquet")
-
-    gcs_block = GcsBucket.load("gcs-best")
+    path = Path(f"{color}/{color}_{year}_{month:02}.parquet")
+    # TODO # change with new block
+    gcs_block = GcsBucket.load("gcs-zoom")
     gcs_block.get_directory(from_path=path, local_path="./")
     return path
 
@@ -53,14 +53,33 @@ def cleanup(path: Path) -> None:
 
 
 @flow()
-def etl():
-    """Main ETL flow"""
-    color = "yellow"  # taxic color
-    path = extract(color)
+def etl_gcs_bq():
+    """Main ETL flow to load data into the warehouse"""
+    color = "yellow"  # taxi color
+    year = 2021
+    month = 1
+
+    path = extract(color, year, month)
     df = transform(path)
     write_bq(df)
     cleanup(path)
 
 
+@flow()
+def etl() -> None:
+    """The main extract, transform, and load function"""
+    color = "yellow"
+    year = 2021
+    month = 1
+    dataset_file = f"{color}_tripdata_{year}-{month:02}"  # adds leading 0 if needed
+    dataset_url = f"https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/{dataset_file}.csv.gz"
+
+    df = fetch(dataset_url)
+    df_clean = clean(df, color)
+    path = write_local(df_clean, color, dataset_file)
+    write_gcs(path, str)
+    return
+
+
 if __name__ == "__main__":
-    etl()
+    etl_gcs_bq()

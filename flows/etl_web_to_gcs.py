@@ -18,7 +18,7 @@ def fetch(dataset_url: str) -> pd.DataFrame:
 
 @task(log_prints=True)
 def clean(df=pd.DataFrame) -> pd.DataFrame:
-    # fixing dtype issues - learned of from exploring in a Jupyter notebook
+    """Fix dtype issues"""  # learned of from exploring in a Jupyter notebook
     df["tpep_pickup_datetime"] = pd.to_datetime(df["tpep_pickup_datetime"])
     df["tpep_dropoff_datetime"] = pd.to_datetime(df["tpep_dropoff_datetime"])
     df["store_and_fwd_flag"] = df["store_and_fwd_flag"].map({"Y": 1, "N": 0})
@@ -39,8 +39,8 @@ def write_local(df: pd.DataFrame, color: str, dataset_file: str) -> Path:
 @task()
 def write_gcs(path: Path, color: str) -> None:
     """Upload local parquet file to GCS"""
-    gcs_block = GcsBucket.load("gcs-zoom")
     # TODO # change with new block
+    gcs_block = GcsBucket.load("gcs-zoom")
     gcs_block.put_directory(
         local_path=f"../data/{color}",
         to_path=color,
