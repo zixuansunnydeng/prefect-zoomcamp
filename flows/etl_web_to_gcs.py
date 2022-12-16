@@ -6,7 +6,7 @@ from prefect_gcp.cloud_storage import GcsBucket
 
 
 @task(log_prints=True, retries=3)
-def extract(dataset_url: str) -> pd.DataFrame:
+def fetch(dataset_url: str) -> pd.DataFrame:
     """Read data from web into pandas DataFrame"""
     # create an artificial failure to show value of retries
     # if randint(0, 1) > 0:
@@ -18,7 +18,7 @@ def extract(dataset_url: str) -> pd.DataFrame:
 
 @task(log_prints=True)
 def clean(df=pd.DataFrame) -> pd.DataFrame:
-    # fix dtype issues - learned of from exploring in a Jupyter notebook
+    # fixing dtype issues - learned of from exploring in a Jupyter notebook
     df["tpep_pickup_datetime"] = pd.to_datetime(df["tpep_pickup_datetime"])
     df["tpep_dropoff_datetime"] = pd.to_datetime(df["tpep_dropoff_datetime"])
     df["store_and_fwd_flag"] = df["store_and_fwd_flag"].map({"Y": 1, "N": 0})
@@ -49,15 +49,15 @@ def write_gcs(path: Path, color: str) -> None:
 
 
 @flow()
-def el() -> None:
-    """The main extract and load function"""
+def etl_web_to_gcs() -> None:
+    """The main extract, transform, and load function"""
     color = "yellow"
     year = 2021
     month = 1
     dataset_file = f"{color}_tripdata_{year}-{month:02}"  # adds leading 0 if needed
     dataset_url = f"https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/{dataset_file}.csv.gz"
 
-    df = extract(dataset_url)
+    df = fetch(dataset_url)
     df_clean = clean(df, color)
     path = write_local(df_clean, color, dataset_file)
     write_gcs(path, str)
@@ -65,4 +65,4 @@ def el() -> None:
 
 
 if __name__ == "__main__":
-    el()
+    etl_web_to_gcs()
