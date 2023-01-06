@@ -13,7 +13,7 @@ credentials_block.save("zoom-gcp-creds", overwrite=True)
 
 
 bucket_block = GcsBucket(
-    gcp_credentials=GcpCredentials.load("zoomcamp-gcp-creds-block"),
+    gcp_credentials=GcpCredentials.load("zoom-gcp-creds"),
     bucket="prefect-de-zoomcamp",  # insert your  GCS bucket name
 )
 
