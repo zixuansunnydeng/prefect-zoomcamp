@@ -1,7 +1,11 @@
 # Data Engineering Zoomcamp 2023 Week 2 
 ## Prefect
 
-This repo contains Python code to accompany the videos that show how to use Prefect with Google Cloud Storage and BigQuery for ETL. Prefect helps you observe and orchestrate your dataflow
+This repo contains Python code to accompany the videos that show how to use Prefect for Data Engineering. We will create ETL workflows to extract, transform, and load your data.
+
+We will use Postgres and GCP's Google Cloud Storage and BigQuery. 
+
+Prefect helps you observe and orchestrate your dataflows.
 
 # Setup
 
@@ -34,7 +38,7 @@ prefect orion start
 
 ## Register the block types that come with prefect-gcp
 
-`prefect block register -m prefect_gcp.cloud_storage`
+`prefect block register -m prefect_gcp`
 
 ## Create Prefect GCP blocks
 
@@ -44,13 +48,15 @@ Paste your service account information from your JSON file into the *Service Acc
 
 ![img.png](images/img.png)
 
-Create GCS Bucket block in UI 
+Create a GCS Bucket block in UI 
 
-Alternatively, create these blocks using code by following the template in the [blocks](./blocks/) folder
+Alternatively, create these blocks using code by following the template in the [blocks](./blocks/) folder. 
 
 ## Create flow code
 
-Write your Python functions and add `@flow` and `@task` decorators.
+Write your Python functions and add `@flow` and `@task` decorators. 
+
+Note: all code should be run from the top level of your folder to keep file paths consistent.
 
 ## Create deployments
 
