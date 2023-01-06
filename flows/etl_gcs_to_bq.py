@@ -31,7 +31,7 @@ def write_bq(df: pd.DataFrame) -> None:
     """Write DataFrame to BiqQuery"""
 
     # load credentials block
-    gcp_credentials_block = GcpCredentials.load("gcp-zoomcamp")
+    gcp_credentials_block = GcpCredentials.load("gcpzz")
 
     df.to_gbq(
         destination_table="prefect-sbx-community-eng.dezoomcamp.rides",
@@ -55,7 +55,7 @@ def cleanup(path: Path) -> None:
 @flow()
 def etl_gcs_bq():
     """Main ETL flow to load data into the warehouse"""
-    color = "yellow"  # taxi color
+    color = "yellow"
     year = 2021
     month = 1
 
