@@ -11,7 +11,7 @@ def extract_from_gcs(color: str, year: int, month: int) -> Path:
     """Download trip data parquet file from GCS"""
     gcs_path = f"{color}/{color}_tripdata_{year}-{month:02}.parquet"
     # TODO # change with new block
-    gcs_block = GcsBucket.load("gcs-zoom")
+    gcs_block = GcsBucket.load("zoom-gcs")
     gcs_block.get_directory(from_path=gcs_path, local_path=f"../data/")
     return Path(f"../data/{gcs_path}")
 
@@ -31,7 +31,7 @@ def write_bq(df: pd.DataFrame) -> None:
     """Write DataFrame to BiqQuery"""
 
     # load credentials block
-    gcp_credentials_block = GcpCredentials.load("gcpzz")
+    gcp_credentials_block = GcpCredentials.load("zoom-gcp-creds")
 
     df.to_gbq(
         destination_table="prefect-sbx-community-eng.dezoomcamp.rides",

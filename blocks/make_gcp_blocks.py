@@ -9,7 +9,7 @@ from prefect_gcp.cloud_storage import GcsBucket
 credentials_block = GcpCredentials(
     service_account_file=".././de-prefect-sbx-community-eng-934851484082.json",
 )
-credentials_block.save("zoomcamp-gcp-creds-block", overwrite=True)
+credentials_block.save("zoom-gcp-creds", overwrite=True)
 
 
 bucket_block = GcsBucket(
@@ -17,4 +17,4 @@ bucket_block = GcsBucket(
     bucket="prefect-de-zoomcamp",  # insert your  GCS bucket name
 )
 
-bucket_block.save("zoomcamp-gcs-bucket-block", overwrite=True)
+bucket_block.save("zoom-gcs", overwrite=True)
