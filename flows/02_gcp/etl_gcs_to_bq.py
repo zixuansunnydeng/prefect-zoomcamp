@@ -42,7 +42,7 @@ def write_bq(df: pd.DataFrame) -> None:
 
 
 @flow()
-def etl_gcs_bq():
+def etl_gcs_to_bq():
     """Main ETL flow to load data into the warehouse"""
     color = "yellow"
     year = 2021
