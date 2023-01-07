@@ -1,16 +1,12 @@
-from random import randint
 from pathlib import Path
 import pandas as pd
 from prefect import flow, task
 from prefect_gcp.cloud_storage import GcsBucket
 
-@task(log_prints=True, retries=3)
+
+@task(retries=3)
 def fetch(dataset_url: str) -> pd.DataFrame:
     """Read data from web into pandas DataFrame"""
-    # create an artificial failure to show value of retries
-    # if randint(0, 1) > 0:
-    #     raise Exception
-
     df = pd.read_csv(dataset_url)
     return df
 
@@ -20,9 +16,6 @@ def clean(df=pd.DataFrame) -> pd.DataFrame:
     """Fix dtype issues"""  # learned of from exploring in a Jupyter notebook
     df["tpep_pickup_datetime"] = pd.to_datetime(df["tpep_pickup_datetime"])
     df["tpep_dropoff_datetime"] = pd.to_datetime(df["tpep_dropoff_datetime"])
-    df["store_and_fwd_flag"] = df["store_and_fwd_flag"].map({"Y": 1, "N": 0})
-    print(df.head(2))
-    print(f"columns: {df.dtypes}")
     print(f"rows: {len(df)}")
     return df
 
@@ -49,11 +42,8 @@ def write_gcs(path: Path, color: str) -> None:
 @flow()
 def etl_web_to_gcs(year, month, color) -> None:
     """The main extract, transform, and load function"""
-    color = "yellow"
-    year = 2021
-    month = 1
     dataset_file = f"{color}_tripdata_{year}-{month:02}"  # adds leading 0 if needed
-    dataset_url = f"https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/{dataset_file}.csv.gz"
+    dataset_url = f"https://github.com/DataTalksClub/nyc-tlc-data/releases/download/{color}/{dataset_file}.csv.gz"
 
     df = fetch(dataset_url)
     df_clean = clean(df)
@@ -61,13 +51,15 @@ def etl_web_to_gcs(year, month, color) -> None:
     write_gcs(path, color)
     return
 
-@flow
+
+@flow()
 def etl_parent_flow(months, year, color):
     for month in months:
         etl_web_to_gcs(year, month, color)
 
+
 if __name__ == "__main__":
-    color = 'yellow'
-    months = [1,2,3]
+    color = "yellow"
+    months = [1, 2, 3]
     year = 2021
     etl_parent_flow(months, year, color)
