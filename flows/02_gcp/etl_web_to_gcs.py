@@ -28,11 +28,13 @@ def clean(df=pd.DataFrame) -> pd.DataFrame:
 
 
 @task()
-def write_local(df: pd.DataFrame, color: str, dataset_file: str) -> Path:
+def write_local(
+    df: pd.DataFrame, color: str, base_path: str, dataset_file: str
+) -> Path:
     """Write DataFrame to local parquet file"""
-    path = Path(f"{color}/{dataset_file}.parquet")
-    df.to_parquet(f"data/{path}", compression="gzip")
-    return path
+    end_path = Path(f"{color}/{dataset_file}.parquet")
+    df.to_parquet(f"{base_path}/{end_path}", compression="gzip")
+    return end_path
 
 
 @task()
@@ -54,10 +56,11 @@ def etl_web_to_gcs() -> None:
     month = 1
     dataset_file = f"{color}_tripdata_{year}-{month:02}"  # adds leading 0 if needed
     dataset_url = f"https://github.com/DataTalksClub/nyc-tlc-data/releases/download/{color}/{dataset_file}.csv.gz"
+    base_path = "/Users/jeffhale/Desktop/prefect/prefect-zoomcamp/data"  # insert absolute path to your data folder
 
     df = fetch(dataset_url)
     df_clean = clean(df)
-    path = write_local(df_clean, color, dataset_file)
+    path = write_local(df_clean, color, base_path, dataset_file)
     write_gcs(path, color)
     return
 
