@@ -5,7 +5,7 @@ from prefect import flow, task
 from prefect_gcp.cloud_storage import GcsBucket
 
 
-@task(log_prints=True, retries=3)
+@task(retries=3)
 def fetch(dataset_url: str) -> pd.DataFrame:
     """Read data from web into pandas DataFrame"""
     # create an artificial failure to show value of retries
@@ -21,7 +21,6 @@ def clean(df=pd.DataFrame) -> pd.DataFrame:
     """Fix dtype issues"""  # learned of from exploring in a Jupyter notebook
     df["tpep_pickup_datetime"] = pd.to_datetime(df["tpep_pickup_datetime"])
     df["tpep_dropoff_datetime"] = pd.to_datetime(df["tpep_dropoff_datetime"])
-    df["store_and_fwd_flag"] = df["store_and_fwd_flag"].map({"Y": 1, "N": 0})
     print(df.head(2))
     print(f"columns: {df.dtypes}")
     print(f"rows: {len(df)}")
