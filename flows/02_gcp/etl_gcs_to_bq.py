@@ -9,7 +9,6 @@ from prefect_gcp import GcpCredentials
 def extract_from_gcs(color: str, year: int, month: int) -> Path:
     """Download trip data parquet file from GCS"""
     gcs_path = f"{color}/{color}_tripdata_{year}-{month:02}.parquet"
-    # TODO # change with new block
     gcs_block = GcsBucket.load("zoom-gcs")
     gcs_block.get_directory(from_path=gcs_path, local_path=f"../data/")
     return Path(f"../data/{gcs_path}")
@@ -42,13 +41,6 @@ def write_bq(df: pd.DataFrame) -> None:
     return
 
 
-@task()
-def cleanup(path: Path) -> None:
-    """Delete local file after use"""
-    path.unlink()
-    return
-
-
 @flow()
 def etl_gcs_bq():
     """Main ETL flow to load data into the warehouse"""
@@ -59,7 +51,6 @@ def etl_gcs_bq():
     path = extract_from_gcs(color, year, month)
     df = transform(path)
     write_bq(df)
-    cleanup(path)
 
 
 if __name__ == "__main__":
