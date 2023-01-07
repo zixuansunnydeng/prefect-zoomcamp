@@ -3,7 +3,6 @@ import pandas as pd
 from prefect import flow, task
 from prefect_gcp.cloud_storage import GcsBucket
 from prefect_gcp import GcpCredentials
-from google.oauth2 import service_account
 
 
 @task()
@@ -34,11 +33,9 @@ def write_bq(df: pd.DataFrame) -> None:
     gcp_credentials_block = GcpCredentials.load("zoom-gcp-creds")
 
     df.to_gbq(
-        destination_table="prefect-sbx-community-eng.dezoomcamp.rides",
+        destination_table="dezoomcamp.rides",
         project_id="prefect-sbx-community-eng",
-        credentials=service_account.Credentials.from_service_account_info(
-            gcp_credentials_block.service_account_info
-        ),
+        credentials=(gcp_credentials_block.get_credentials_from_service_account()),
         chunksize=500_000,
         if_exists="append",
     )
