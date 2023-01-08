@@ -13,7 +13,7 @@ def fetch(dataset_url: str) -> pd.DataFrame:
 
 @task(log_prints=True)
 def clean(df=pd.DataFrame) -> pd.DataFrame:
-    """Fix dtype issues"""  # learned of from exploring in a Jupyter notebook
+    """Fix dtype issues"""
     df["tpep_pickup_datetime"] = pd.to_datetime(df["tpep_pickup_datetime"])
     df["tpep_dropoff_datetime"] = pd.to_datetime(df["tpep_dropoff_datetime"])
     print(f"rows: {len(df)}")
@@ -23,8 +23,8 @@ def clean(df=pd.DataFrame) -> pd.DataFrame:
 @task()
 def write_local(df: pd.DataFrame, color: str, dataset_file: str) -> Path:
     """Write DataFrame to local parquet file"""
-    path = Path(f"{color}/{dataset_file}.parquet")
-    df.to_parquet(f"data/{path}", compression="gzip")
+    path = Path(f"data/{color}/{dataset_file}.parquet")
+    df.to_parquet(path, compression="gzip")
     return path
 
 
@@ -32,15 +32,12 @@ def write_local(df: pd.DataFrame, color: str, dataset_file: str) -> Path:
 def write_gcs(path: Path, color: str) -> None:
     """Upload local parquet file to GCS"""
     gcs_block = GcsBucket.load("zoom-gcs")
-    gcs_block.upload_from_path(
-        from_path=f"data/{path}",
-        to_path=path,
-    )
+    gcs_block.upload_from_path(from_path=path, to_path=path)
     return
 
 
 @flow()
-def etl_web_to_gcs(year, month, color) -> None:
+def etl_web_to_gcs(year: int, month: int, color: str) -> None:
     """The main extract, transform, and load function"""
     dataset_file = f"{color}_tripdata_{year}-{month:02}"  # adds leading 0 if needed
     dataset_url = f"https://github.com/DataTalksClub/nyc-tlc-data/releases/download/{color}/{dataset_file}.csv.gz"
@@ -53,7 +50,9 @@ def etl_web_to_gcs(year, month, color) -> None:
 
 
 @flow()
-def etl_parent_flow(months, year, color):
+def etl_parent_flow(
+    months: list[int] = [1, 2], year: int = 2021, color: str = "yellow"
+):
     for month in months:
         etl_web_to_gcs(year, month, color)
 
