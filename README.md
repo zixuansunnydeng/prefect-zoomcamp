@@ -50,7 +50,7 @@ Paste your service account information from your JSON file into the *Service Acc
 
 Create a GCS Bucket block in UI 
 
-Alternatively, create these blocks using code by following the template in the [blocks](./blocks/) folder. 
+Alternatively, create these blocks using code by following the templates in the [blocks](./blocks/) folder. 
 
 ## Create flow code
 
@@ -72,13 +72,9 @@ Or create a schedule from the UI or when you create your deployment.
 
 Make sure your agent set up to poll the work queue you created when you made your deployment (*default* if you didn't specify a work queue).
 
-# Create GitHub flow code storage block
+# Later: create a Docker Image and use a DockerContainer infrastructure block
 
-Add some collaboration capabilities. Create a GitHub repo, push your flow code there wit git, and create a GitHub storage block. Reference the block when you create a deployment.
+Bake your flow code into a Docker image, create a DockerContainer, and your flow code in a Docker container.
 
-# Optional: create infrastructure blocks
-
-Use a Docker Container block to run your flow code in a Docker container.
-
-# Optional: use Prefect Cloud server for added capabilties
-Signup for free at https://app.prefect.cloud
+# Optional: use Prefect Cloud for added capabilties
+Signup and use for free at https://app.prefect.cloud
