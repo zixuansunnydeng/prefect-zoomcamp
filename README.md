@@ -72,9 +72,9 @@ Or create a schedule from the UI or when you create your deployment.
 
 Make sure your agent set up to poll the work queue you created when you made your deployment (*default* if you didn't specify a work queue).
 
-# Later: create a Docker Image and use a DockerContainer infrastructure block
+## Later: create a Docker Image and use a DockerContainer infrastructure block
 
 Bake your flow code into a Docker image, create a DockerContainer, and your flow code in a Docker container.
 
-# Optional: use Prefect Cloud for added capabilties
+## Optional: use Prefect Cloud for added capabilties
 Signup and use for free at https://app.prefect.cloud
