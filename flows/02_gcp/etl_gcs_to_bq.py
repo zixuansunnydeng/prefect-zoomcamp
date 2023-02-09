@@ -31,8 +31,8 @@ def write_bq(df: pd.DataFrame) -> None:
     gcp_credentials_block = GcpCredentials.load("zoom-gcp-creds")
 
     df.to_gbq(
-        destination_table="dezoomcamp.rides",
-        project_id="prefect-sbx-community-eng",
+        destination_table="ny_taxi_trips.rides",
+        project_id="shaped-manifest-376405",
         credentials=gcp_credentials_block.get_credentials_from_service_account(),
         chunksize=500_000,
         if_exists="append",
